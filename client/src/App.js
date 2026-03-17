@@ -136,12 +136,13 @@ function App() {
       });
 
       const data = await res.json();
+      console.log("BACKEND RESPONSE:", data);
 
       const updatedMessages = [
         ...newMessages,
         {
           role: "assistant",
-          content: data.reply?.content || "No response"
+          content: data.reply?.content || data.error || JSON.stringify(data)
         }
       ];
 
