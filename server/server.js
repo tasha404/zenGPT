@@ -3,124 +3,60 @@ import cors from "cors";
 import dotenv from "dotenv";
 import OpenAI from "openai";
 
-if (process.env.NODE_ENV !== "production") {
-  dotenv.config();
-}
+dotenv.config();
 
 const app = express();
 
-// CORS configuration - Allow your Vercel frontend
-app.use(cors({
-  origin: (origin, callback) => {
-    callback(null, true);
-  },
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
-  credentials: true
-}));
+// ✅ CORS (allow all for now)
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
 app.use(express.json());
 
-// Test route
-app.get("/", (req, res) => {
-  res.json({ 
-    status: "online", 
-    message: "Backend is running on Render 🚀",
-    frontend: "https://kiinai.vercel.app"
-  });
-});
-
-// Health check
-app.get("/health", (req, res) => {
-  res.json({ 
-    status: "healthy",
-    openai: process.env.OPENAI_API_KEY ? "configured" : "missing"
-  });
-});
-
-// Initialize OpenAI
-const openai = new OpenAI({
+// ✅ OpenAI setup
+const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Chat endpoint
+// ✅ Health check (important for Render)
+app.get("/", (req, res) => {
+  res.send("🔥 ZenGPT backend is running");
+});
+
+// ✅ Chat route
 app.post("/chat", async (req, res) => {
   try {
-    const { messages } = req.body;
+    const { message } = req.body;
 
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: "Invalid messages format" });
-    }
-
-    console.log("📨 Received messages:", messages.length);
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5-mini",
-max_output_tokens: 200,
+    const response = await client.chat.completions.create({
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: "You are zenGPT, a calm and helpful AI assistant.",
+          content: "You are a helpful, friendly, slightly cute AI assistant.",
         },
-        ...messages,
+        {
+          role: "user",
+          content: message,
+        },
       ],
-      temperature: 0.7,
-      max_tokens: 500,
     });
-
-    const aiMessage = completion.choices?.[0]?.message?.content;
 
     res.json({
-      reply: {
-        role: "assistant",
-        content: aiMessage || "I couldn't generate a response. Please try again.",
-      },
-      usage: completion.usage
+      reply: response.choices[0].message.content,
     });
-
-    console.log("✅ Response sent successfully");
-
   } catch (error) {
-    console.error("🔥 OpenAI API Error:", error);
-
-    let statusCode = 500;
-    let errorMessage = error.message;
-
-    if (error.status === 401) {
-      statusCode = 401;
-      errorMessage = "Invalid OpenAI API key";
-    } else if (error.status === 429) {
-      statusCode = 429;
-      errorMessage = "Rate limit exceeded. Please try again later.";
-    }
-
-    res.status(statusCode).json({
-      error: errorMessage,
-      type: error.type || "api_error"
-    });
+    console.error("ERROR:", error);
+    res.status(500).json({ error: "Something went wrong" });
   }
 });
 
-// ❌ REMOVE THIS LINE - it's causing the error
-// app.options("*", cors());
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: "Route not found" });
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-  console.error("💥 Server Error:", err);
-  res.status(500).json({ 
-    error: "Internal server error",
-    message: process.env.NODE_ENV === "development" ? err.message : undefined
-  });
-});
-
+// ✅ Use Render port
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📍 Allowed frontend: https://kiinai.vercel.app`);
+  console.log(`🔥 Server running on port ${PORT}`);
 });
