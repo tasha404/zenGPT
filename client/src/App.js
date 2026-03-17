@@ -252,35 +252,48 @@ function App() {
 
   {/* PROFILE */}
   <div className="profile" onClick={logout}>
-  <div className="avatar">NA</div>
   {sidebarOpen && <span>Logout</span>}
 </div>
 </div>
 
       {/* 💬 CHAT */}
       <div className="main">
-        <div className="chat-box">
-          {chat.map((msg, i) => (
-            <div key={i} className={`message ${msg.role}`}>
-              <ReactMarkdown>{msg.content}</ReactMarkdown>
-            </div>
-          ))}
+  {chat.length === 0 ? (
+    <div className="empty-state">
+      <h1>What can I help with?</h1>
 
-          {loading && (
-            <div className="message assistant">typing...</div>
-          )}
-        </div>
-
-        <div className="input-box">
-          <input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            placeholder="iMessage your AI..."
-          />
-          <button onClick={sendMessage}>Send</button>
-        </div>
+      <div className="center-input">
+        <input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          placeholder="Ask anything"
+        />
+        <button onClick={sendMessage}>↑</button>
       </div>
+    </div>
+  ) : (
+    <>
+      <div className="chat-box">
+        {chat.map((msg, i) => (
+          <div key={i} className={`message ${msg.role}`}>
+            {msg.content}
+          </div>
+        ))}
+      </div>
+
+      <div className="input-box">
+        <input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          placeholder="Ask anything..."
+        />
+        <button onClick={sendMessage}>Send</button>
+      </div>
+    </>
+  )}
+</div>
     </div>
   );
 }

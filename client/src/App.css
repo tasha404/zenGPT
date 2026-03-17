@@ -298,3 +298,85 @@ body {
 .input-box button:hover {
   background: #ff6f9c;
 }
+/* 🌤 MAIN BACKGROUND */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f7f7f8;
+}
+
+/* 🧠 EMPTY STATE */
+.empty-state {
+  margin: auto;
+  text-align: center;
+}
+
+.empty-state h1 {
+  font-size: 28px;
+  font-weight: 500;
+  margin-bottom: 25px;
+  color: #111;
+}
+
+/* ✨ CENTER INPUT */
+.center-input {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 30px;
+  padding: 10px 15px;
+  width: 500px;
+  max-width: 90%;
+  margin: auto;
+
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.center-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 15px;
+}
+
+/* send button */
+.center-input button {
+  background: #ff8fb1;
+  border: none;
+  color: white;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+}
+
+/* 💬 CHAT MODE */
+.chat-box {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+/* bottom input */
+.input-box {
+  display: flex;
+  padding: 15px;
+  background: #f7f7f8;
+}
+
+.input-box input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+}
+
+.input-box button {
+  margin-left: 10px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: none;
+  background: #ff8fb1;
+  color: white;
+}
