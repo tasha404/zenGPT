@@ -1,11 +1,11 @@
-/* 🌌 GLOBAL */
+/* 🌤 GLOBAL */
 body {
   margin: 0;
-  font-family: "Inter", sans-serif;
-  background: #0f172a;
-  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f2f2f7;
 }
 
+/* layout */
 .app {
   display: flex;
   height: 100vh;
@@ -14,64 +14,32 @@ body {
 /* 📁 SIDEBAR */
 .sidebar {
   width: 260px;
-  background: #020617;
+  background: #ffffff;
+  border-right: 1px solid #ddd;
   padding: 15px;
   display: flex;
   flex-direction: column;
-  transition: 0.3s;
 }
 
-.sidebar.closed {
-  width: 70px;
-}
-
-/* buttons */
 .sidebar button {
-  background: #111827;
-  color: white;
+  background: #f2f2f7;
   border: none;
   padding: 10px;
-  margin-bottom: 10px;
   border-radius: 10px;
+  margin-bottom: 10px;
   cursor: pointer;
-  text-align: left;
-  transition: 0.2s;
 }
 
-.sidebar button:hover {
-  background: #1f2937;
-}
-
-/* chat items */
 .chat-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  background: #020617;
   padding: 8px;
   border-radius: 8px;
-  margin-bottom: 5px;
   cursor: pointer;
-  transition: 0.2s;
 }
 
 .chat-item:hover {
-  background: #1e293b;
-}
-
-.chat-item span {
-  flex: 1;
-  font-size: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.chat-item button {
-  background: transparent;
-  color: #ef4444;
-  border: none;
-  cursor: pointer;
+  background: #f2f2f7;
 }
 
 /* 💬 MAIN */
@@ -79,100 +47,99 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #020617;
 }
 
 /* chat area */
 .chat-box {
   flex: 1;
   overflow-y: auto;
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
+  padding: 20px;
 }
 
-/* messages */
+/* 💬 BUBBLES */
 .message {
-  max-width: 60%;
+  max-width: 65%;
   padding: 12px 16px;
-  border-radius: 16px;
-  margin-bottom: 12px;
-  line-height: 1.4;
+  border-radius: 20px;
+  margin-bottom: 10px;
   font-size: 14px;
+  line-height: 1.4;
 }
 
-/* user bubble */
+/* 🩷 USER (pale pink) */
 .user {
-  background: #2563eb;
+  background: #ffd6e7;
   align-self: flex-end;
 }
 
-/* ai bubble */
+/* 🤖 AI (gray) */
 .assistant {
-  background: #1e293b;
+  background: #e5e5ea;
   align-self: flex-start;
 }
 
 /* ✨ INPUT */
 .input-box {
   display: flex;
-  padding: 15px;
-  border-top: 1px solid #1e293b;
-  background: #020617;
+  padding: 10px;
+  background: #ffffff;
+  border-top: 1px solid #ddd;
 }
 
 .input-box input {
   flex: 1;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
+  padding: 12px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
   outline: none;
-  background: #111827;
-  color: white;
-  font-size: 14px;
 }
 
 .input-box button {
   margin-left: 10px;
-  padding: 12px 18px;
-  border-radius: 12px;
+  padding: 10px 16px;
+  border-radius: 20px;
   border: none;
-  background: #2563eb;
+  background: #ff8fb1;
   color: white;
   cursor: pointer;
-  transition: 0.2s;
 }
 
-.input-box button:hover {
-  background: #1d4ed8;
+/* 🔐 AUTH PAGE */
+.auth-page {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* 🔐 AUTH */
-.auth {
-  margin: auto;
+.auth-card {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 300px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  width: 280px;
-  background: #020617;
-  padding: 25px;
-  border-radius: 16px;
 }
 
-.auth input {
+.auth-card h2 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.auth-card input {
   margin-bottom: 10px;
   padding: 12px;
   border-radius: 10px;
-  border: none;
-  background: #111827;
-  color: white;
+  border: 1px solid #ddd;
 }
 
-.auth button {
-  margin-top: 5px;
+.auth-card button {
   padding: 12px;
   border-radius: 10px;
   border: none;
-  background: #2563eb;
+  background: #ff8fb1;
   color: white;
+  margin-top: 5px;
   cursor: pointer;
 }
