@@ -170,7 +170,7 @@ function App() {
       // IMPORTANT: Use your Render backend URL
       // Replace this with your actual Render URL
       const API_URL = import.meta.env.PROD 
-        ? "https://zengpt-j99f.onrender.com/" // ⚠️ REPLACE with your actual Render URL
+        ? "https://zengpt-j99f.onrender.com" // ⚠️ REPLACE with your actual Render URL
         : import.meta.env.VITE_API_URL || "http://localhost:5000";
 
       console.log("Sending request to:", `${API_URL}/chat`);
@@ -181,7 +181,7 @@ function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ 
-          messages: messages.concat({ role: "user", content: userMessage })
+          messages: [{ role: "user", content: [{ type: "text", text: userMessage }] }]
         }),
       });
 
@@ -465,7 +465,7 @@ function App() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             placeholder="Ask anything..."
             disabled={loading || !currentChatId}
           />

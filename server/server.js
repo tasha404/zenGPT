@@ -11,11 +11,9 @@ const app = express();
 
 // CORS configuration - Allow your Vercel frontend
 app.use(cors({
-  origin: [
-    "https://kiinai.vercel.app", // Your Vercel frontend
-    "http://localhost:5173",
-    "http://localhost:3000"
-  ],
+  origin: (origin, callback) => {
+    callback(null, true);
+  },
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
   credentials: true
@@ -57,7 +55,8 @@ app.post("/chat", async (req, res) => {
     console.log("📨 Received messages:", messages.length);
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-5-mini",
+max_output_tokens: 200,
       messages: [
         {
           role: "system",
