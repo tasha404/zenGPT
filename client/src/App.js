@@ -194,7 +194,7 @@ function App() {
     return (
       <div className="auth-container">
   <div className="auth-card minimal">
-    <h2>zenGPT</h2>
+    <h2>kiin AI</h2>
 
     {authError && (
       <div className="auth-error">{authError}</div>
@@ -284,7 +284,7 @@ function App() {
 
       {/* 💬 CHAT AREA */}
       <div className="app">
-        <h1>zenGPT 🌿</h1>
+        <h1>kiin AI</h1>
 
         <div className="chat-box">
           {messages.map((msg, index) => (
