@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const app = express();
-
+console.log("ENV CHECK:", process.env.OPENAI_API_KEY ? "FOUND" : "MISSING");
 // middleware
 app.use(cors());
 app.use(express.json());
