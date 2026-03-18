@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
-// 🔥 Firebase
+import { useRef } from "react";
 import { auth, db } from "./firebase";
 import {
   signInWithEmailAndPassword,
@@ -35,6 +35,7 @@ function App() {
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([]);
   const [chatId, setChatId] = useState(null);
+  const chatIdRef = useRef(null);
 
   // 📁 sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -51,6 +52,8 @@ function App() {
     return () => unsub();
   }, []);
 useEffect(() => {
+  chatIdRef.current = chatId;
+
   if (chatId) {
     loadChat(chatId);
   }
@@ -97,6 +100,7 @@ useEffect(() => {
   console.log("Loading chat:", id);
 
   setLoadingChat(true);
+  setChat([]); // 🔥 CLEAR OLD CHAT IMMEDIATELY
 
   try {
     const q = query(
@@ -112,15 +116,14 @@ useEffect(() => {
       msgs.push(doc.data());
     });
 
-    console.log("MESSAGES:", msgs);
+    if (id !== chatIdRef.current) return;
 
-    setChat([...msgs]);
-    setChatId(id);
+    setChat(msgs);
   } catch (err) {
     console.error("LOAD CHAT ERROR:", err);
   }
 
-  setLoadingChat(false); // ✅ ALWAYS RUN
+  setLoadingChat(false);
 };
 
 
