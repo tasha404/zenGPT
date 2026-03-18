@@ -25,7 +25,6 @@ function App() {
 
   // 📁 sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
- const [setLoading] = useState(false);
 
   // 🔐 auth listener
   useEffect(() => {
@@ -78,7 +77,6 @@ function App() {
 
   setChat(updatedChat);
   setMessage("");
-  setLoading(true);
 
   try {
     const res = await fetch(API_URL, {
@@ -98,7 +96,6 @@ function App() {
     alert("Server error");
   }
 
-  setLoading(false);
 };
 
   // 🔐 AUTH PAGE
