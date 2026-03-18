@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
-import { auth, db } from "./firebase";
-
+import { auth } from "./firebase";
 
 import {
   signInWithEmailAndPassword,
@@ -10,18 +9,6 @@ import {
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
-
-import {
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-  query,
-  where,
-  orderBy,
-  serverTimestamp,
-} from "firebase/firestore";
 
 const API_URL = "https://kiinai-production.up.railway.app/chat";
 
@@ -35,28 +22,20 @@ function App() {
   // 💬 chat
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState([]);
-  const [chatId, setChatId] = useState(null);
-  
 
   // 📁 sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [history, setHistory] = useState([]);
- const [loading, setLoading] = useState(false);
- const [loadingChat, setLoadingChat] = useState(false);
+ const [setLoading] = useState(false);
 
   // 🔐 auth listener
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
-      if (u) loadHistory(u.uid);
+      if (u) setChat([]);
     });
     return () => unsub();
   }, []);
-useEffect(() => {
-  if (chatId) {
-    loadChat(chatId);
-  }
-}, [chatId]);
+
   // 🔑 LOGIN
   const login = async () => {
     try {
@@ -81,132 +60,46 @@ useEffect(() => {
     setChat([]);
   };
 
-  // 📂 LOAD SIDEBAR HISTORY
-  const loadHistory = async (uid) => {
-    const q = query(collection(db, "sessions"), where("uid", "==", uid));
-    const snap = await getDocs(q);
-
-    let arr = [];
-    snap.forEach((doc) => {
-      arr.push({ id: doc.id, ...doc.data() });
-    });
-
-    setHistory(arr);
-  };
-
-  // 📂 LOAD ONE CHAT
- const loadChat = async (id) => {
-  console.log("Loading chat:", id);
-
-  setLoadingChat(true);
-  setChat([]); // 🔥 CLEAR OLD CHAT IMMEDIATELY
-
-  try {
-    const q = query(
-      collection(db, "messages"),
-      where("chatId", "==", id),
-      orderBy("createdAt", "asc")
-    );
-
-    const snap = await getDocs(q);
-
-    let msgs = [];
-    snap.forEach((doc) => {
-      msgs.push(doc.data());
-    });
 
 
-    setChat(msgs);
-  } catch (err) {
-    console.error("LOAD CHAT ERROR:", err);
-  }
-
-  setLoadingChat(false);
-};
 
 
   // 🆕 NEW CHAT
   const newChat = () => {
-    setChat([]);
-    setChatId(null);
-  };
-
-  // ❌ DELETE CHAT
-  const deleteChat = async (id) => {
-    await deleteDoc(doc(db, "sessions", id));
-    loadHistory(user.uid);
-    if (chatId === id) {
-      setChat([]);
-      setChatId(null);
-    }
-  };
+  setChat([]);
+};
 
   // 🚀 SEND MESSAGE
   const sendMessage = async () => {
   if (!message.trim()) return;
 
-  const currentMessage = message;
-  const userMsg = { role: "user", content: currentMessage };
-const updatedChat = [...chat, userMsg];
+  const userMsg = { role: "user", content: message };
+  const updatedChat = [...chat, userMsg];
 
-setChat(updatedChat);
+  setChat(updatedChat);
+  setMessage("");
+  setLoading(true);
 
-    setMessage("");
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ messages: updatedChat }),
+    });
 
-setLoading(true);
+    const data = await res.json();
 
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ messages: updatedChat }),
-      });
+    const aiMsg = { role: "assistant", content: data.reply };
+    setChat((prev) => [...prev, aiMsg]);
+  } catch (err) {
+    console.error(err);
+    alert("Server error");
+  }
 
-      const data = await res.json();
-
-
-const aiMsg = { role: "assistant", content: data.reply };
-setChat((prev) => [...prev, aiMsg]);
-
-      let currentChatId = chatId;
-
-      // 🆕 create new session if needed
-      if (!currentChatId) {
-        const docRef = await addDoc(collection(db, "sessions"), {
-          uid: user.uid,
-          title: currentMessage.slice(0, 20),
-          createdAt: serverTimestamp(),
-        });
-
-        currentChatId = docRef.id;
-        setChatId(currentChatId);
-        loadHistory(user.uid);
-      }
-
-      // 💾 save messages
-      await addDoc(collection(db, "messages"), {
-  chatId: currentChatId,
-  role: "user",
-  content: currentMessage,
-  createdAt: serverTimestamp(),
-});
-
-      await addDoc(collection(db, "messages"), {
-        chatId: currentChatId,
-        role: "assistant",
-        content: data.reply,
-        createdAt: serverTimestamp(),
-      });
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      alert("Server error");
-      setLoading(false);
-    }
-
-  };
+  setLoading(false);
+};
 
   // 🔐 AUTH PAGE
   if (!user) {
@@ -259,22 +152,7 @@ setChat((prev) => [...prev, aiMsg]);
   </div>
 
   {/* CHATS */}
-  <div className="chat-list">
-    {history.map((h) => (
-      <div
-  key={h.id}
-  cclassName={`chat-row ${chatId === h.id ? "active" : ""}`}
->
-  <span onClick={() => setChatId(h.id)}>
-    {sidebarOpen ? h.title : "💬"}
-  </span>
-
-  {sidebarOpen && (
-    <button onClick={() => deleteChat(h.id)}>⋯</button>
-  )}
-</div>
-    ))}
-  </div>
+  
 
   {/* PROFILE */}
   <div className="profile" onClick={logout}>
@@ -284,11 +162,7 @@ setChat((prev) => [...prev, aiMsg]);
 
       {/* 💬 CHAT */}
       <div className="main">
-  {loadingChat ? (
-  <div className="empty-state">
-    <h1>Loading chat...</h1>
-  </div>
-) : chat.length === 0 ? (
+  {chat.length === 0 ? (
     <div className="empty-state">
       <h1>What can I help with?</h1>
 
@@ -305,22 +179,16 @@ setChat((prev) => [...prev, aiMsg]);
   ) : (
     <>
       <div className="chat-box">
-  {chat.map((msg, i) => (
-  <div key={i} className={`message ${msg.role}`}>
-      {msg.role === "assistant" ? (
-        <ReactMarkdown>{msg.content}</ReactMarkdown>
-      ) : (
-        msg.content
-      )}
-    </div>
-  ))}
-
-  {loading && (
-  <div className="message assistant loading">
-    <span></span><span></span><span></span>
-  </div>
-)}
-</div>
+        {chat.map((msg, i) => (
+          <div key={i} className={`message ${msg.role}`}>
+            {msg.role === "assistant" ? (
+              <ReactMarkdown>{msg.content}</ReactMarkdown>
+            ) : (
+              msg.content
+            )}
+          </div>
+        ))}
+      </div>
 
       <div className="input-box">
         <input
