@@ -40,6 +40,8 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [history, setHistory] = useState([]);
  const [loading, setLoading] = useState(false);
+ const [loadingChat, setLoadingChat] = useState(false);
+
   // 🔐 auth listener
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -88,23 +90,30 @@ function App() {
 
   // 📂 LOAD ONE CHAT
   const loadChat = async (id) => {
-    const q = query(
-  collection(db, "messages"),
-  where("chatId", "==", id),
-  orderBy("createdAt", "asc")
-);
+  console.log("Loading chat:", id);
 
-    const snap = await getDocs(q);
+  setLoadingChat(true); // ✅ START loading
 
-    let msgs = [];
-snap.forEach((doc) => {
-  const data = doc.data();
-  msgs.push(data);
-});
+  const q = query(
+    collection(db, "messages"),
+    where("chatId", "==", id),
+    orderBy("createdAt", "asc")
+  );
 
-    setChat(msgs);
-    setChatId(id);
-  };
+  const snap = await getDocs(q);
+
+  let msgs = [];
+  snap.forEach((doc) => {
+    msgs.push(doc.data());
+  });
+
+  console.log("MESSAGES:", msgs);
+
+  setChat(msgs);
+  setChatId(id);
+
+  setLoadingChat(false); // ✅ END loading
+};
 
   // 🆕 NEW CHAT
   const newChat = () => {
@@ -141,7 +150,7 @@ setLoading(true);
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ messages: [...chat, { role: "user", content: message }] }),
+        body: JSON.stringify({ messages: updatedChat }),
       });
 
       const data = await res.json();
@@ -269,7 +278,11 @@ setChat((prev) => [...prev, aiMsg]);
 
       {/* 💬 CHAT */}
       <div className="main">
-  {chat.length === 0 ? (
+  {loadingChat ? (
+  <div className="empty-state">
+    <h1>Loading chat...</h1>
+  </div>
+) : chat.length === 0 ? (
     <div className="empty-state">
       <h1>What can I help with?</h1>
 
