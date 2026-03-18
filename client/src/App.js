@@ -126,8 +126,6 @@ function App() {
     const userMsg = { role: "user", content: message };
     setChat((prev) => [...prev, userMsg]);
     setMessage("");
-    setLoading(true);
-
     try {
       const res = await fetch(API_URL, {
         method: "POST",
@@ -176,7 +174,6 @@ function App() {
       alert("Server error");
     }
 
-    setLoading(false);
   };
 
   // 🔐 AUTH PAGE
