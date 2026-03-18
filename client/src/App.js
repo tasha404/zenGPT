@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
 import { auth, db } from "./firebase";
-import { useNavigate, useParams } from "react-router-dom";
 
 
 import {
@@ -27,7 +26,6 @@ import {
 const API_URL = "https://kiinai-production.up.railway.app/chat";
 
 function App() {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
   // 🔐 auth
@@ -45,7 +43,6 @@ function App() {
   const [history, setHistory] = useState([]);
  const [loading, setLoading] = useState(false);
  const [loadingChat, setLoadingChat] = useState(false);
-const { chatId: urlChatId } = useParams();
 
   // 🔐 auth listener
   useEffect(() => {
@@ -56,10 +53,10 @@ const { chatId: urlChatId } = useParams();
     return () => unsub();
   }, []);
 useEffect(() => {
-  if (urlChatId) {
-    loadChat(urlChatId);
+  if (chatId) {
+    loadChat(chatId);
   }
-}, [urlChatId]);
+}, [chatId]);
   // 🔑 LOGIN
   const login = async () => {
     try {
@@ -266,9 +263,9 @@ setChat((prev) => [...prev, aiMsg]);
     {history.map((h) => (
       <div
   key={h.id}
-  className={`chat-row ${urlChatId === h.id ? "active" : ""}`}
+  cclassName={`chat-row ${chatId === h.id ? "active" : ""}`}
 >
-  <span onClick={() => navigate(`/chat/${h.id}`)}>
+  <span onClick={() => setChatId(h.id)}>
     {sidebarOpen ? h.title : "💬"}
   </span>
 
