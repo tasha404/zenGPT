@@ -125,7 +125,10 @@ snap.forEach((doc) => {
     if (!message.trim()) return;
 
     const userMsg = { role: "user", content: message };
-    setChat((prev) => [...prev, userMsg]);
+const updatedChat = [...chat, userMsg];
+
+setChat(updatedChat);
+
     setMessage("");
 
 setLoading(true);
@@ -174,9 +177,11 @@ setChat((prev) => [...prev, aiMsg]);
         content: data.reply,
         createdAt: serverTimestamp(),
       });
+      setLoading(false);
     } catch (err) {
       console.error(err);
       alert("Server error");
+      setLoading(false);
     }
 
   };
@@ -290,10 +295,10 @@ setChat((prev) => [...prev, aiMsg]);
   ))}
 
   {loading && (
-    <div className="message assistant loading">
-      thinking...
-    </div>
-  )}
+  <div className="message assistant loading">
+    <span></span><span></span><span></span>
+  </div>
+)}
 </div>
 
       <div className="input-box">
