@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef  } from "react";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
 import { auth } from "./firebase";
@@ -14,6 +14,7 @@ const API_URL = "https://kiinai-production.up.railway.app/chat";
 
 function App() {
   const [user, setUser] = useState(null);
+  const bottomRef = useRef(null);
 
   // 🔐 auth
   const [email, setEmail] = useState("");
@@ -34,6 +35,10 @@ function App() {
     });
     return () => unsub();
   }, []);
+
+useEffect(() => {
+  bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [chat]);
 
   // 🔑 LOGIN
   const login = async () => {
@@ -176,16 +181,18 @@ function App() {
   ) : (
     <>
       <div className="chat-box">
-        {chat.map((msg, i) => (
-          <div key={i} className={`message ${msg.role}`}>
-            {msg.role === "assistant" ? (
-              <ReactMarkdown>{msg.content}</ReactMarkdown>
-            ) : (
-              msg.content
-            )}
-          </div>
-        ))}
-      </div>
+  {chat.map((msg, i) => (
+    <div key={i} className={`message ${msg.role}`}>
+      {msg.role === "assistant" ? (
+        <ReactMarkdown>{msg.content}</ReactMarkdown>
+      ) : (
+        msg.content
+      )}
+    </div>
+  ))}
+
+  <div ref={bottomRef} />
+</div>
 
       <div className="input-box">
         <input
