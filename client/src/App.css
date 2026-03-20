@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'CuteFont';
+  src: url('./assets/fonts/CuteFont.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* ========================= */
 /* 🌤 GLOBAL */
 /* ========================= */
@@ -39,6 +46,8 @@ body {
   text-align: center;
   margin-bottom: 25px;
   font-weight: 500;
+  font-family: 'WordsTaken';
+  
 }
 
 .auth-card input {
