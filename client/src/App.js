@@ -108,7 +108,7 @@ useEffect(() => {
     return (
       <div className="auth-page">
         <div className="auth-card">
-          <h2>KIIN</h2>
+          <h2>KIIn</h2>
 
           <input
             placeholder="Email"
