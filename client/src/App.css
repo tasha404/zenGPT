@@ -84,7 +84,7 @@ body {
 /* 📁 SIDEBAR */
 /* ========================= */
 .sidebar {
-  width: 260px;
+  width: 150px;
   background: #f7f7f8;
   padding: 12px;
   display: flex;
@@ -94,7 +94,7 @@ body {
 }
 
 .sidebar.closed {
-  width: 70px;
+  width: 50px;
 }
 
 .top {
@@ -104,6 +104,8 @@ body {
   margin-bottom: 15px;
 }
 
+
+
 .menu-btn {
   width: 36px;
   height: 36px;
@@ -112,6 +114,7 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  padding: 10px;
 }
 
 .menu-btn:hover {
@@ -132,9 +135,10 @@ body {
 
 .action {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 10px;
   border-radius: 10px;
   cursor: pointer;
 }
@@ -145,10 +149,14 @@ body {
 
 /* profile */
 .profile {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
   padding: 10px;
   border-radius: 10px;
   cursor: pointer;
-  margin-top: auto;
 }
 
 .profile:hover {

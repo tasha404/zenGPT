@@ -2,6 +2,10 @@ import { useState, useEffect, useRef  } from "react";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
 import { auth } from "./firebase";
+import { IoIosLogOut } from "react-icons/io";
+import { PiChatCircle } from "react-icons/pi";
+import { BsLayoutSidebar } from "react-icons/bs";
+
 
 import {
   signInWithEmailAndPassword,
@@ -139,7 +143,7 @@ useEffect(() => {
       className="menu-btn"
       onClick={() => setSidebarOpen(!sidebarOpen)}
     >
-      ☰
+      <BsLayoutSidebar />
     </div>
 
     {sidebarOpen && <div className="logo">Kiin AI</div>}
@@ -148,7 +152,8 @@ useEffect(() => {
   {/* ACTIONS */}
   <div className="actions">
     <div className="action" onClick={newChat}>
-      ✏️ {sidebarOpen && <span>New chat</span>}
+      <PiChatCircle />
+      {sidebarOpen && <span>New chat</span>}
     </div>
 
   </div>
@@ -158,6 +163,7 @@ useEffect(() => {
 
   {/* PROFILE */}
   <div className="profile" onClick={logout}>
+  <IoIosLogOut />
   {sidebarOpen && <span>Logout</span>}
 </div>
 </div>
