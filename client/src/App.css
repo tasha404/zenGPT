@@ -182,6 +182,46 @@ body {
   overflow-y: auto;
 }
 
+/* chat item row */
+.chat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* text left, icon right */
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.chat-item:hover {
+  background: #e5e5ea;
+}
+
+/* chat title */
+.chat-title {
+  flex: 1;
+  text-align: left;
+  /* 🔥 FIX: no more centered text */
+  font-size: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* delete button */
+.delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: none;
+  /* 👈 hidden by default */
+}
+
+/* show ONLY on hover */
+.chat-item:hover .delete-btn {
+  display: block;
+}
+
 /* messages */
 .message {
   max-width: 70%;

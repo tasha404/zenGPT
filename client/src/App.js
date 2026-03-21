@@ -5,6 +5,7 @@ import { auth } from "./firebase";
 import { IoIosLogOut } from "react-icons/io";
 import { PiChatCircle } from "react-icons/pi";
 import { BsLayoutSidebar } from "react-icons/bs";
+import { GoTrash } from "react-icons/go";
 
 
 import {
@@ -26,23 +27,28 @@ function App() {
 
   // 💬 chat
   const [message, setMessage] = useState("");
-  const [chat, setChat] = useState([]);
+  const [chats, setChats] = useState([
+  { id: Date.now(), title: "New Chat", messages: [] }
+]);
+
+const [currentChatId, setCurrentChatId] = useState(chats[0].id);
+const currentChat = chats.find(c => c.id === currentChatId) || { messages: [] };
 
   // 📁 sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // 🔐 auth listener
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      if (u) setChat([]);
-    });
-    return () => unsub();
-  }, []);
-
-useEffect(() => {
-  bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-}, [chat]);
+  const unsub = onAuthStateChanged(auth, (u) => {
+    setUser(u);
+    if (u) {
+      const newId = Date.now();
+      setChats([{ id: newId, messages: [] }]);
+      setCurrentChatId(newId);
+    }
+  });
+  return () => unsub();
+}, []);
 
   // 🔑 LOGIN
   const login = async () => {
@@ -64,9 +70,12 @@ useEffect(() => {
 
   // 🚪 LOGOUT
   const logout = async () => {
-    await signOut(auth);
-    setChat([]);
-  };
+  await signOut(auth);
+
+  const newId = Date.now();
+  setChats([{ id: newId, messages: [] }]);
+  setCurrentChatId(newId);
+};
 
 
 
@@ -74,17 +83,56 @@ useEffect(() => {
 
   // 🆕 NEW CHAT
   const newChat = () => {
-  setChat([]);
-};
+  const newId = Date.now();
 
+  const newChatObj = {
+    id: newId,
+    title: "New Chat",
+    messages: []
+  };
+
+  setChats(prev => [...prev, newChatObj]);
+  setCurrentChatId(newId);
+};
+const deleteChat = (id) => {
+  const filtered = chats.filter(c => c.id !== id);
+
+  if (filtered.length === 0) {
+    const newId = Date.now();
+    setChats([{ id: newId, messages: [] }]);
+    setCurrentChatId(newId);
+  } else {
+    setChats(filtered);
+    setCurrentChatId(filtered[0].id);
+  }
+};
   // 🚀 SEND MESSAGE
   const sendMessage = async () => {
   if (!message.trim()) return;
 
   const userMsg = { role: "user", content: message };
-  const updatedChat = [...chat, userMsg];
 
-  setChat(updatedChat);
+  const updatedMessages = [...currentChat.messages, userMsg];
+  const isFirstMessage = currentChat.messages.length === 0;
+
+  // update chat with loading
+  setChats(prev =>
+  prev.map(chat =>
+    chat.id === currentChatId
+      ? {
+          ...chat,
+          title: isFirstMessage
+            ? userMsg.content.slice(0, 25)
+            : chat.title,
+          messages: [
+            ...updatedMessages,
+            { role: "assistant", content: "loading" }
+          ]
+        }
+      : chat
+  )
+);
+
   setMessage("");
 
   try {
@@ -93,19 +141,32 @@ useEffect(() => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ messages: updatedChat }),
+      body: JSON.stringify({ messages: updatedMessages }),
     });
 
     const data = await res.json();
 
-    const aiMsg = { role: "assistant", content: data.reply };
-    setChat((prev) => [...prev, aiMsg]);
+    // replace loading
+    setChats(prev =>
+      prev.map(chat =>
+        chat.id === currentChatId
+          ? {
+              ...chat,
+              messages: [
+                ...updatedMessages,
+                { role: "assistant", content: data.reply }
+              ]
+            }
+          : chat
+      )
+    );
+
   } catch (err) {
     console.error(err);
     alert("Server error");
   }
-
 };
+
 
   // 🔐 AUTH PAGE
   if (!user) {
@@ -160,10 +221,28 @@ useEffect(() => {
 
   </div>
 
-  {/* CHATS */}
+ <div className="chat-list">
+  {chats.map((c, index) => (
+   <div key={c.id} className="chat-item">
+  <span
+    className="chat-title"
+    onClick={() => setCurrentChatId(c.id)}
+  >
+    {sidebarOpen && c.title}
+  </span>
+
+  <button
+    className="delete-btn"
+    onClick={() => deleteChat(c.id)}
+  >
+    <GoTrash />
+  </button>
+</div>
+  ))}
+</div>
   
 
-{/* CHATS */} 
+{/* profile */} 
   <div className="profile" onClick={logout}>
   <IoIosLogOut />
   {sidebarOpen && <span>Logout</span>}
@@ -172,7 +251,7 @@ useEffect(() => {
 
       {/* 💬 CHAT */}
       <div className="main">
-  {chat.length === 0 ? (
+  {currentChat.messages.length === 0 ? (
     <div className="empty-state">
       <h1>What ki-in I do for you today ?</h1>
 
@@ -189,13 +268,21 @@ useEffect(() => {
   ) : (
     <>
       <div className="chat-box">
-  {chat.map((msg, i) => (
+  {currentChat.messages.map((msg, i) => (
     <div key={i} className={`message ${msg.role}`}>
       {msg.role === "assistant" ? (
-        <ReactMarkdown>{msg.content}</ReactMarkdown>
-      ) : (
-        msg.content
-      )}
+  msg.content === "loading" ? (
+    <div className="loading">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  ) : (
+    <ReactMarkdown>{msg.content}</ReactMarkdown>
+  )
+) : (
+  msg.content
+)}
     </div>
   ))}
 
