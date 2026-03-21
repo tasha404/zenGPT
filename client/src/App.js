@@ -107,24 +107,6 @@ const deleteChat = (id) => {
   }
 };
 
-const generateTitle = (messages) => {
-  // only take USER messages
-  const userText = messages
-    .filter(m => m.role === "user")
-    .map(m => m.content)
-    .join(" ")
-    .toLowerCase();
-
-  // remove useless words
-  const cleaned = userText
-    .replace(/\b(hi|hello|hey|ok|thanks|thank you)\b/gi, "")
-    .trim();
-
-  if (!cleaned || cleaned.length < 5) return "New Chat";
-
-  // shorten nicely
-  return cleaned.slice(0, 30) + "...";
-};
 
 const generateAITitle = async (messages) => {
   try {
