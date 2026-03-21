@@ -119,16 +119,19 @@ const generateAITitle = async (messages) => {
         messages: [
           {
             role: "system",
-            content: "Summarize this conversation in 3-5 short words only."
+            content:
+              "Summarize this conversation in 3-5 short words based on the overall topic.",
           },
-          ...messages.slice(0, 3) // only first few msgs
+          ...messages
+            .filter(m => m.role === "user") // only user msgs
+            .slice(-5), // last 5 messages = better context
         ],
       }),
     });
 
     const data = await res.json();
 
-    return data.reply || "New Chat";
+    return data.reply?.replace(/[".]/g, "").trim() || "New Chat";
   } catch (err) {
     console.error(err);
     return "New Chat";
