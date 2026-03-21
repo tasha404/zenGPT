@@ -156,12 +156,14 @@ useEffect(() => {
       {sidebarOpen && <span>New chat</span>}
     </div>
 
+
+
   </div>
 
   {/* CHATS */}
   
 
-  {/* PROFILE */}
+{/* CHATS */} 
   <div className="profile" onClick={logout}>
   <IoIosLogOut />
   {sidebarOpen && <span>Logout</span>}
