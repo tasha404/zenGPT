@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef  } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import ReactMarkdown from "react-markdown";
 import { auth } from "./firebase";
@@ -6,7 +6,7 @@ import { IoIosLogOut } from "react-icons/io";
 import { PiChatCircle } from "react-icons/pi";
 import { BsLayoutSidebar } from "react-icons/bs";
 import { GoTrash } from "react-icons/go";
-
+import { BsPaperclip } from "react-icons/bs";
 
 import {
   signInWithEmailAndPassword,
@@ -28,27 +28,30 @@ function App() {
   // 💬 chat
   const [message, setMessage] = useState("");
   const [chats, setChats] = useState([
-  { id: Date.now(), title: "New Chat", messages: [] }
-]);
+    { id: Date.now(), title: "New Chat", messages: [] }
+  ]);
 
-const [currentChatId, setCurrentChatId] = useState(chats[0].id);
-const currentChat = chats.find(c => c.id === currentChatId) || { messages: [] };
+  const [currentChatId, setCurrentChatId] = useState(chats[0].id);
+  const currentChat = chats.find(c => c.id === currentChatId) || { messages: [] };
+
+  // 📂 file context (PER CHAT)
+  const [fileContext, setFileContext] = useState({});
 
   // 📁 sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // 🔐 auth listener
   useEffect(() => {
-  const unsub = onAuthStateChanged(auth, (u) => {
-    setUser(u);
-    if (u) {
-      const newId = Date.now();
-      setChats([{ id: newId, messages: [] }]);
-      setCurrentChatId(newId);
-    }
-  });
-  return () => unsub();
-}, []);
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      if (u) {
+        const newId = Date.now();
+        setChats([{ id: newId, title: "New Chat", messages: [] }]);
+        setCurrentChatId(newId);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // 🔑 LOGIN
   const login = async () => {
@@ -70,139 +73,156 @@ const currentChat = chats.find(c => c.id === currentChatId) || { messages: [] };
 
   // 🚪 LOGOUT
   const logout = async () => {
-  await signOut(auth);
+    await signOut(auth);
+    const newId = Date.now();
+    setChats([{ id: newId, title: "New Chat", messages: [] }]);
+    setCurrentChatId(newId);
+  };
 
-  const newId = Date.now();
-  setChats([{ id: newId, messages: [] }]);
-  setCurrentChatId(newId);
-};
+  // 📂 FILE UPLOAD
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
+    if (file.type !== "text/plain") {
+      alert("Only .txt files supported for now");
+      return;
+    }
 
+    const text = await file.text();
 
-
+    setFileContext(prev => ({
+      ...prev,
+      [currentChatId]: {
+        text,
+        name: file.name
+      }
+    }));
+  };
 
   // 🆕 NEW CHAT
   const newChat = () => {
-  const newId = Date.now();
-
-  const newChatObj = {
-    id: newId,
-    title: "New Chat",
-    messages: []
+    const newId = Date.now();
+    const newChatObj = {
+      id: newId,
+      title: "New Chat",
+      messages: []
+    };
+    setChats(prev => [...prev, newChatObj]);
+    setCurrentChatId(newId);
   };
 
-  setChats(prev => [...prev, newChatObj]);
-  setCurrentChatId(newId);
-};
-const deleteChat = (id) => {
-  const filtered = chats.filter(c => c.id !== id);
+  const deleteChat = (id) => {
+    const filtered = chats.filter(c => c.id !== id);
 
-  if (filtered.length === 0) {
-    const newId = Date.now();
-    setChats([{ id: newId, messages: [] }]);
-    setCurrentChatId(newId);
-  } else {
-    setChats(filtered);
-    setCurrentChatId(filtered[0].id);
-  }
-};
+    if (filtered.length === 0) {
+      const newId = Date.now();
+      setChats([{ id: newId, title: "New Chat", messages: [] }]);
+      setCurrentChatId(newId);
+    } else {
+      setChats(filtered);
+      setCurrentChatId(filtered[0].id);
+    }
+  };
 
+  const generateAITitle = async (messages) => {
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content:
+                "Summarize this conversation in 3-5 short words based on the overall topic.",
+            },
+            ...messages.filter(m => m.role === "user").slice(-5),
+          ],
+        }),
+      });
 
-const generateAITitle = async (messages) => {
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: "system",
-            content:
-              "Summarize this conversation in 3-5 short words based on the overall topic.",
-          },
-          ...messages
-            .filter(m => m.role === "user") // only user msgs
-            .slice(-5), // last 5 messages = better context
-        ],
-      }),
-    });
-
-    const data = await res.json();
-
-    return data.reply?.replace(/[".]/g, "").trim() || "New Chat";
-  } catch (err) {
-    console.error(err);
-    return "New Chat";
-  }
-};
+      const data = await res.json();
+      return data.reply?.replace(/[".]/g, "").trim() || "New Chat";
+    } catch {
+      return "New Chat";
+    }
+  };
 
   // 🚀 SEND MESSAGE
-const sendMessage = async () => {
-  if (!message.trim()) return;
+  const sendMessage = async () => {
+    if (!message.trim()) return;
 
-  const userMsg = { role: "user", content: message };
-  const updatedMessages = [...currentChat.messages, userMsg];
-  const isFirstMessage = currentChat.messages.length === 0;
+    const userMsg = { role: "user", content: message };
+    const updatedMessages = [...currentChat.messages, userMsg];
+    const isFirstMessage = currentChat.messages.length === 0;
 
-  // 1️⃣ show loading
-  setChats(prev =>
-    prev.map(chat =>
-      chat.id === currentChatId
-        ? {
-            ...chat,
-            title: isFirstMessage ? "Thinking..." : chat.title,
-            messages: [
-              ...updatedMessages,
-              { role: "assistant", content: "loading" }
-            ]
-          }
-        : chat
-    )
-  );
-
-  setMessage("");
-
-  try {
-    // 2️⃣ fetch response
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ messages: updatedMessages }),
-    });
-
-    const data = await res.json();
-
-    // 3️⃣ generate AI title (only first message)
-    let newTitle = null;
-    if (isFirstMessage) {
-      newTitle = await generateAITitle(updatedMessages);
-    }
-
-    // 4️⃣ replace loading with real response
     setChats(prev =>
       prev.map(chat =>
         chat.id === currentChatId
           ? {
               ...chat,
-              title: newTitle || chat.title,
+              title: isFirstMessage ? "Thinking..." : chat.title,
               messages: [
                 ...updatedMessages,
-                { role: "assistant", content: data.reply }
+                { role: "assistant", content: "loading" }
               ]
             }
           : chat
       )
     );
 
-  } catch (err) {
-    console.error(err);
-    alert("Server error");
-  }
-};
+    setMessage("");
+
+    try {
+      // 🧠 inject file context
+      const context = fileContext[currentChatId]?.text;
+
+      const finalMessages = context
+        ? [
+            {
+              role: "system",
+              content: `You MUST answer using this file context:\n\n${context}`
+            },
+            ...updatedMessages
+          ]
+        : updatedMessages;
+
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ messages: finalMessages }),
+      });
+
+      const data = await res.json();
+
+      let newTitle = null;
+      if (isFirstMessage) {
+        newTitle = await generateAITitle(updatedMessages);
+      }
+
+      setChats(prev =>
+        prev.map(chat =>
+          chat.id === currentChatId
+            ? {
+                ...chat,
+                title: newTitle || chat.title,
+                messages: [
+                  ...updatedMessages,
+                  { role: "assistant", content: data.reply }
+                ]
+              }
+            : chat
+        )
+      );
+
+    } catch (err) {
+      console.error(err);
+      alert("Server error");
+    }
+  };
 
   // 🔐 AUTH PAGE
   if (!user) {
@@ -211,16 +231,8 @@ const sendMessage = async () => {
         <div className="auth-card">
           <h2 style={{ fontFamily: 'CuteFont' }}>KIIn</h2>
 
-          <input
-            placeholder="Email"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+          <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
 
           <button onClick={login}>Login</button>
           <button onClick={signup}>Sign Up</button>
@@ -232,111 +244,106 @@ const sendMessage = async () => {
   // 💬 MAIN APP
   return (
     <div className="app">
-      {/* 📁 SIDEBAR */}
+
+      {/* SIDEBAR */}
       <div className={`sidebar ${sidebarOpen ? "" : "closed"}`}>
-  {/* TOP BAR */}
-  <div className="top">
-    <div
-      className="menu-btn"
-      onClick={() => setSidebarOpen(!sidebarOpen)}
-    >
-      <BsLayoutSidebar />
-    </div>
+        <div className="top">
+          <div className="menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <BsLayoutSidebar />
+          </div>
+          {sidebarOpen && <div className="logo">Kiin AI</div>}
+        </div>
 
-    {sidebarOpen && <div className="logo">Kiin AI</div>}
-  </div>
+        <div className="actions">
+          <div className="action" onClick={newChat}>
+            <PiChatCircle />
+            {sidebarOpen && <span>New chat</span>}
+          </div>
+        </div>
 
-  {/* ACTIONS */}
-  <div className="actions">
-    <div className="action" onClick={newChat}>
-      <PiChatCircle />
-      {sidebarOpen && <span>New chat</span>}
-    </div>
+        <div className="chat-list">
+          {chats.map((c) => (
+            <div key={c.id} className="chat-item">
+              <span className="chat-title" onClick={() => setCurrentChatId(c.id)}>
+                {sidebarOpen && c.title}
+              </span>
 
+              <button className="delete-btn" onClick={() => deleteChat(c.id)}>
+                <GoTrash />
+              </button>
+            </div>
+          ))}
+        </div>
 
+        <div className="profile" onClick={logout}>
+          <IoIosLogOut />
+          {sidebarOpen && <span>Logout</span>}
+        </div>
+      </div>
 
-  </div>
-
- <div className="chat-list">
-  {chats.map((c, index) => (
-   <div key={c.id} className="chat-item">
-  <span
-    className="chat-title"
-    onClick={() => setCurrentChatId(c.id)}
-  >
-    {sidebarOpen && c.title}
-  </span>
-
-  <button
-    className="delete-btn"
-    onClick={() => deleteChat(c.id)}
-  >
-    <GoTrash />
-  </button>
-</div>
-  ))}
-</div>
-  
-
-{/* profile */} 
-  <div className="profile" onClick={logout}>
-  <IoIosLogOut />
-  {sidebarOpen && <span>Logout</span>}
-</div>
-</div>
-
-      {/* 💬 CHAT */}
+      {/* MAIN */}
       <div className="main">
-  {currentChat.messages.length === 0 ? (
-    <div className="empty-state">
-      <h1>What ki-in I do for you today ?</h1>
 
-      <div className="center-input">
-        <input
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="Ask anything"
-        />
-        <button onClick={sendMessage}>↑</button>
+        {/* FILE INDICATOR */}
+        {fileContext[currentChatId] && (
+          <div className="file-indicator">
+            📄 {fileContext[currentChatId].name}
+          </div>
+        )}
+
+        {currentChat.messages.length === 0 ? (
+          <div className="empty-state">
+            <h1>What ki-in I do for you today?</h1>
+
+            <div className="center-input">
+              <input
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                placeholder="Ask anything"
+              />
+              <button onClick={sendMessage}>↑</button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="chat-box">
+              {currentChat.messages.map((msg, i) => (
+                <div key={i} className={`message ${msg.role}`}>
+                  {msg.role === "assistant" ? (
+                    msg.content === "loading" ? (
+                      <div className="loading">
+                        <span></span><span></span><span></span>
+                      </div>
+                    ) : (
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    )
+                  ) : (
+                    msg.content
+                  )}
+                </div>
+              ))}
+              <div ref={bottomRef} />
+            </div>
+
+            <div className="input-box">
+              <label className="upload-btn">
+                <BsPaperclip />
+                <input type="file" accept=".txt" hidden onChange={handleFileUpload} />
+              </label>
+
+              <input
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                placeholder="Ask anything..."
+              />
+
+              <button onClick={sendMessage}>Send</button>
+            </div>
+          </>
+        )}
       </div>
-    </div>
-  ) : (
-    <>
-      <div className="chat-box">
-  {currentChat.messages.map((msg, i) => (
-    <div key={i} className={`message ${msg.role}`}>
-      {msg.role === "assistant" ? (
-  msg.content === "loading" ? (
-    <div className="loading">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-  ) : (
-    <ReactMarkdown>{msg.content}</ReactMarkdown>
-  )
-) : (
-  msg.content
-)}
-    </div>
-  ))}
-
-  <div ref={bottomRef} />
-</div>
-
-      <div className="input-box">
-        <input
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="Ask anything..."
-        />
-        <button onClick={sendMessage}>Send</button>
-      </div>
-    </>
-  )}
-</div>
     </div>
   );
 }

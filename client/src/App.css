@@ -207,6 +207,20 @@ body {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+/* upload button */
+.upload-btn {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+}
+
+.file-indicator {
+  padding: 6px 12px;
+  font-size: 12px;
+  background: #fff3f6;
+  border-bottom: 1px solid #eee;
+}
 
 /* delete button */
 .delete-btn {
