@@ -531,3 +531,30 @@ td {
 tr:nth-child(even) td {
   background: #f3f4f6;
 }
+
+
+@media (max-width: 768px) {
+  .pomodoro {
+    padding: 30px 15px;
+  }
+
+  .pomodoro h1 {
+    font-size: 22px;
+    text-align: center;
+  }
+
+  .pomodoro p {
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .controls {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .controls button {
+    flex: 1;
+    min-width: 90px;
+  }
+}

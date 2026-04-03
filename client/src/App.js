@@ -40,7 +40,7 @@ function App() {
   const [fileContext, setFileContext] = useState({});
 
   // 📁 sidebar
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
 
   // 🍅 STUDY MODE (Pomodoro)
   const [time, setTime] = useState(1500); // 25 minutes in seconds
@@ -121,7 +121,19 @@ function App() {
     setChats([{ id: newId, title: "New Chat", messages: [] }]);
     setCurrentChatId(newId);
   };
+useEffect(() => {
+  const handleResize = () => {
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    } else {
+      setSidebarOpen(true);
+    }
+  };
 
+  window.addEventListener("resize", handleResize);
+
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
   // 📂 FILE UPLOAD (MULTI FILE)
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
