@@ -597,3 +597,17 @@ tr:nth-child(even) td {
     justify-content: center;
   }
 }
+
+/* 📱 FIX CONTENT NOT BLOCKED */
+@media (max-width: 768px) {
+  .main {
+    margin-left: 60px;
+    /* same as mini sidebar width */
+    transition: 0.25s ease;
+  }
+
+  /* when sidebar is fully open */
+  .sidebar.open~.main {
+    margin-left: 220px;
+  }
+}
