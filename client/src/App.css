@@ -382,7 +382,7 @@ body {
 /* ========================= */
 @media (max-width: 768px) {
   .app {
-    flex-direction: column;
+    flex-direction: row;
   }
 
 
@@ -551,26 +551,19 @@ tr:nth-child(even) td {
 /* 📱 MINI SIDEBAR (like your left image) */
 @media (max-width: 768px) {
   .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100%;
-    z-index: 20;
-    transition: 0.25s ease;
-  }
-
-  /* MINI STATE (DEFAULT MOBILE) */
-  .sidebar.mini {
-    width: 60px;
-    transform: translateX(0);
-  }
-
-  /* FULL OPEN STATE */
-  .sidebar.open {
-    width: 220px;
-    transform: translateX(0);
-    background: #f7f7f8;
-  }
+      width: 150px;
+      transition: 0.25s ease;
+    }
+  
+    /* mini */
+    .sidebar.mini {
+      width: 60px;
+    }
+  
+    /* open */
+    .sidebar.open {
+      width: 220px;
+    }
 
   /* ICON CENTER */
   .sidebar.mini .action {
@@ -598,16 +591,14 @@ tr:nth-child(even) td {
   }
 }
 
-/* 📱 FIX CONTENT NOT BLOCKED */
 @media (max-width: 768px) {
-  .main {
-    margin-left: 60px;
-    /* same as mini sidebar width */
-    transition: 0.25s ease;
+  .app {
+    flex-direction: row;
+    /* IMPORTANT */
   }
 
-  /* when sidebar is fully open */
-  .sidebar.open~.main {
-    margin-left: 220px;
+  .main {
+    flex: 1;
+    min-width: 0;
   }
 }
