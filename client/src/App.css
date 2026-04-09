@@ -83,18 +83,188 @@ body {
 /* ========================= */
 /* 📁 SIDEBAR */
 /* ========================= */
+
 .sidebar {
-  width: 150px;
+  width: 220px;
+  height: 100vh;
+  /* 🔥 required */
   background: #f7f7f8;
   padding: 12px;
+
   display: flex;
   flex-direction: column;
+
   border-right: 1px solid #e5e5e5;
-  transition: 0.25s;
+  transition: width 0.25s ease;
 }
 
-.sidebar.closed {
-  width: 50px;
+/* MINI (collapsed) */
+.sidebar.mini {
+  width: 70px;
+}
+
+/* MOBILE OPEN */
+.sidebar.open {
+  width: 220px;
+}
+
+/* ========================= */
+/* TOP */
+/* ========================= */
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.menu-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.menu-btn:hover {
+  background: #e5e5ea;
+}
+
+.logo {
+  font-weight: 600;
+}
+
+/* ========================= */
+/* ACTIONS */
+/* ========================= */
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.action:hover {
+  background: #e5e5ea;
+}
+
+/* ========================= */
+/* CHAT LIST */
+/* ========================= */
+
+.chat-list {
+  flex: 1;
+  /* 🔥 pushes logout down */
+  overflow-y: auto;
+}
+
+.chat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.chat-item:hover {
+  background: #e5e5ea;
+}
+
+.chat-title {
+  flex: 1;
+  font-size: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* delete button */
+.delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: none;
+}
+
+.chat-item:hover .delete-btn {
+  display: block;
+}
+
+/* ========================= */
+/* LOGOUT */
+/* ========================= */
+
+.profile {
+  margin-top: auto;
+  /* 🔥 KEY */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.profile:hover {
+  background: #e5e5ea;
+}
+
+
+
+/* DESKTOP MINI SIDEBAR FIX */
+@media (min-width: 769px) {
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    /* 🔥 REQUIRED */
+  }
+
+  .chat-list {
+    flex: 1;
+    /* 🔥 THIS pushes logout down */
+  }
+
+  .sidebar.mini .profile {
+    margin-top: auto;
+    /* 🔥 KEY FIX */
+    justify-content: center;
+  }
+
+  .sidebar.mini {
+    width: 70px;
+    align-items: center;
+  }
+
+  .sidebar.mini .top {
+    justify-content: center;
+  }
+
+  .sidebar.mini .actions {
+    margin-top: 20px;
+    gap: 20px;
+    /* 🔥 evenly spaced */
+  }
+
+  .sidebar.mini .action {
+    justify-content: center;
+    padding: 12px;
+  }
+
 }
 
 .top {

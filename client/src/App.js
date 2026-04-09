@@ -15,7 +15,16 @@ import {
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  setDoc,
+  deleteDoc
+} from "firebase/firestore";
 
+import { db } from "./firebase";
 const API_URL = "https://kiinai-production.up.railway.app/chat";
 
 function App() {
@@ -51,17 +60,51 @@ const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const timerRef = useRef(null);
 
   // 🔐 auth listener
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      if (u) {
-        const newId = Date.now();
-        setChats([{ id: newId, title: "New Chat", messages: [] }]);
-        setCurrentChatId(newId);
-      }
-    });
-    return () => unsub();
-  }, []);
+  onAuthStateChanged(auth, async (u) => {
+  setUser(u);
+
+  if (u) {
+    const chatsRef = collection(db, "users", u.uid, "chats");
+    const snapshot = await getDocs(chatsRef);
+
+    const loadedChats = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    if (loadedChats.length > 0) {
+      setChats(loadedChats);
+      setCurrentChatId(loadedChats[0].id);
+    } else {
+      const newChat = {
+        title: "New Chat",
+        messages: []
+      };
+
+      const docRef = await addDoc(chatsRef, newChat);
+
+      setChats([{ id: docRef.id, ...newChat }]);
+      setCurrentChatId(docRef.id);
+    }
+  }
+});
+
+//SAVE chats whenever they change
+useEffect(() => {
+  if (!user) return;
+
+  const saveChats = async () => {
+    for (const chat of chats) {
+      const chatRef = doc(db, "users", user.uid, "chats", chat.id);
+      await setDoc(chatRef, {
+        title: chat.title,
+        messages: chat.messages
+      });
+    }
+  };
+
+  saveChats();
+}, [chats, user]);
 
   // ✅ AUTO SCROLL
   useEffect(() => {
@@ -158,30 +201,33 @@ useEffect(() => {
     }));
   };
 
-  // 🆕 NEW CHAT
-  const newChat = () => {
-    const newId = Date.now();
-    const newChatObj = {
-      id: newId,
-      title: "New Chat",
-      messages: []
-    };
-    setChats(prev => [...prev, newChatObj]);
-    setCurrentChatId(newId);
+  //  NEW CHAT
+  const newChat = async () => {
+  const chatsRef = collection(db, "users", user.uid, "chats");
+
+  const newChatObj = {
+    title: "New Chat",
+    messages: []
   };
 
-  const deleteChat = (id) => {
-    const filtered = chats.filter(c => c.id !== id);
+  const docRef = await addDoc(chatsRef, newChatObj);
 
-    if (filtered.length === 0) {
-      const newId = Date.now();
-      setChats([{ id: newId, title: "New Chat", messages: [] }]);
-      setCurrentChatId(newId);
-    } else {
-      setChats(filtered);
-      setCurrentChatId(filtered[0].id);
-    }
-  };
+  setChats(prev => [...prev, { id: docRef.id, ...newChatObj }]);
+  setCurrentChatId(docRef.id);
+};
+
+  const deleteChat = async (id) => {
+  await deleteDoc(doc(db, "users", user.uid, "chats", id));
+
+  const filtered = chats.filter(c => c.id !== id);
+
+  if (filtered.length === 0) {
+    newChat();
+  } else {
+    setChats(filtered);
+    setCurrentChatId(filtered[0].id);
+  }
+};
 
   const generateAITitle = async (messages) => {
     try {
